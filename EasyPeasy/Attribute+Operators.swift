@@ -92,14 +92,18 @@ internal func =~ (installed: Attribute, toInstall: Attribute) -> Bool {
         return false
     }
     
-    // Conditions conflict (we assume condition is true for
-    // the installed view)
-    var toInstallCondition = true
-    if let createView = toInstall.createView {
-        toInstallCondition = toInstall.shouldInstallOnView(createView)
+    // Conditions conflict. He have to check if both attributes fulfill their condition. If so, they will be conflict.
+    var installedCondition = true
+    if let installedInView = installed.createView {
+        installedCondition = installed.shouldInstallOnView(installedInView)
     }
     
-    if toInstallCondition == false {
+    var toInstallCondition = true
+    if let toInstallInView = toInstall.createView {
+        toInstallCondition = toInstall.shouldInstallOnView(toInstallInView)
+    }
+    
+    if installedCondition != toInstallCondition {
         return false
     }
     

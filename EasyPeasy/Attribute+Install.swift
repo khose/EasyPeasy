@@ -40,21 +40,23 @@ internal extension Attribute {
         - parameter view: `UIView` in which the `Attribute` will be installed
      */
     internal func resolveConflictsOnView(view: UIView) {
+        guard let _ = view.superview else {
+            return
+        }
+        
         // Find conflicting constraints and attributes already installed
         let ownerView = self.ownedBySuperview() ? view.superview! : view
-        var conflictingAttributes: [Attribute] = []
+
         let conflictingConstraints = ownerView.constraints.filter { constraint in
             if let attribute = constraint.easy_attribute where attribute =~ self {
-                conflictingAttributes.append(attribute)
                 return true
             }
             return false
         }
         
         // Remove conflicting attributes
-        ownerView.easy_attributes = ownerView.easy_attributes.filter {
-            conflictingAttributes.contains($0) == false || $0 == self
-        }
+        let conflictingAttributes: [Attribute] = ownerView.easy_attributes.filter { $0 != self && (($0 =~ self) == false) }
+        ownerView.easy_attributes = conflictingAttributes
         
         // Deactivate conflicting installed constraints
         NSLayoutConstraint.deactivateConstraints(conflictingConstraints)

@@ -44,6 +44,8 @@ internal extension Attribute {
             return
         }
         
+        self.createView = view
+        
         // Find conflicting constraints and attributes already installed
         let ownerView = self.ownedBySuperview() ? view.superview! : view
 

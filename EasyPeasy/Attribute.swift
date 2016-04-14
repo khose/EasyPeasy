@@ -128,9 +128,6 @@ public class Attribute {
         // Reference to the target view
         self.createView = view
         
-        // Resolve constraint conflicts
-        self.resolveConflictsOnView(view)
-        
         // If condition is `false` return
         if self.shouldInstallOnView(view) == false {
             return []

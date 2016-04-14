@@ -120,22 +120,6 @@ class Attribute_OperatorsTests: XCTestCase {
         XCTAssertTrue(attributeA.first! =~ attributeB.first!)
     }
     
-    func testThatConditionForTheLhsItemIsIgnored() {
-        // given
-        let superview = UIView(frame: CGRectMake(0, 0, 400, 1000))
-        let viewA = UIView(frame: CGRectZero)
-        superview.addSubview(viewA)
-        let viewB = UIView(frame: CGRectZero)
-        superview.addSubview(viewB)
-        
-        // when
-        let attributeA = viewA <- Left(120).to(viewB).with(.LowPriority).when { false }
-        let attributeB = viewA <- Left(340).to(viewB).with(.LowPriority).when { false }
-        
-        // then
-        XCTAssertFalse(attributeA.first! =~ attributeB.first!)
-    }
-    
     func testThatLeftAttributeConflictsWithAllAttributesOfItsKind() {
         // given
         let superview = UIView(frame: CGRectMake(0, 0, 400, 1000))

@@ -38,7 +38,9 @@ public func <- (lhs: UIView, rhs: [Attribute]) -> [Attribute] {
     var constraintsToInstall: [NSLayoutConstraint] = []
     var regularAttributes: [Attribute] = []
     for attribute in rhs {
-        // Create the constraint
+        // Resolve constraint conflicts
+        attribute.resolveConflictsOnView(lhs)
+        // Create constraints after solving other possible conflicts
         let newConstraints = attribute.createConstraintForView(lhs)
         constraintsToInstall.appendContentsOf(newConstraints)
         

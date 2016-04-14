@@ -105,9 +105,8 @@ class Attribute_InstallTests: XCTestCase {
         let superview = UIView(frame: CGRectMake(0, 0, 400, 1000))
         let viewA = UIView(frame: CGRectZero)
         superview.addSubview(viewA)
-        let viewB = UIView(frame: CGRectZero)
-        superview.addSubview(viewB)
         let attributes = viewA <- Width(120)
+        
         XCTAssertTrue(viewA.easy_attributes.count == 1)
         XCTAssertTrue(viewA.easy_attributes.first! === attributes.first!)
         XCTAssertTrue(viewA.constraints.filter { $0.easy_attribute != nil }.first!.easy_attribute! === attributes.first!)

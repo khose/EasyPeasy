@@ -248,7 +248,8 @@
 				CDEBFEA1DB04EA9925E00FA92BDF5C03 /* Constant.swift */,
 				A07E300593A742567F8987659FABEA18 /* Priority.swift */,
 			);
-			path = EasyPeasy;
+			name = EasyPeasy;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		FFB2C496A687DD212F2A240560268585 /* Products */ = {

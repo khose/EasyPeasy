@@ -17,9 +17,9 @@ infix operator <- {}
     in the left hand side of it
     - parameter lhs: `UIView` the attributes will apply to
     - parameter rhs: Attribute applied to the `UIView`
-    - returns: The array of attributes applied
+    - returns: The array of `NSLayoutConstraints` applied
  */
-public func <- (lhs: UIView, rhs: Attribute) -> [Attribute] {
+public func <- (lhs: UIView, rhs: Attribute) -> [NSLayoutConstraint] {
     return lhs <- [rhs]
 }
 
@@ -28,47 +28,26 @@ public func <- (lhs: UIView, rhs: Attribute) -> [Attribute] {
      in the left hand side of it
      - parameter lhs: UIView the attributes will apply to
      - parameter rhs: Attributes applied to the UIView
-     - returns: The array of attributes applied
+     - returns: The array of `NSLayoutConstraints` applied
  */
-public func <- (lhs: UIView, rhs: [Attribute]) -> [Attribute] {
+public func <- (lhs: UIView, rhs: [Attribute]) -> [NSLayoutConstraint] {
     // Disable autoresizing to constraints translation
     lhs.translatesAutoresizingMaskIntoConstraints = false
     
-    // Create constraints to install and gather regular attribtues
+    // Create constraints to install
     var constraintsToInstall: [NSLayoutConstraint] = []
-    var regularAttributes: [Attribute] = []
+
     for attribute in rhs {
         // Create the constraint
-        let newConstraints = attribute.createConstraintForView(lhs)
+        let newConstraints = attribute.createConstraintsForItem(lhs)
         constraintsToInstall.appendContentsOf(newConstraints)
-        
-        // Gather regular attributes only as we don't want to store
-        // `CompoundAttribute` objects
-        var attributesToStore: [Attribute] = []
-        if let compountAttribute = attribute as? CompoundAttribute {
-            attributesToStore.appendContentsOf(compountAttribute.attributes)
-        }
-        else {
-            attributesToStore.append(attribute)
-        }
-        
-        // Append to the list of attributes that will be returned
-        regularAttributes.appendContentsOf(attributesToStore)
-        
-        // Store the attribute applied in the superview
-        if attribute.ownedBySuperview() {
-            lhs.superview?.easy_attributes.appendContentsOf(attributesToStore)
-        }
-        else { // Store the attributes applied in self
-            lhs.easy_attributes.appendContentsOf(attributesToStore)
-        }
     }
     
     // Install these constraints
     NSLayoutConstraint.activateConstraints(constraintsToInstall)
     
-    // Return just regular `Attributes`, not `CompoundAttributes`
-    return regularAttributes
+    // Return the installed `NSLayoutConstraints`
+    return constraintsToInstall
 }
 
 /**
@@ -85,12 +64,12 @@ public extension UIView {
         var storedAttributes: [Attribute] = []
         
         // Reload attributes owned by the superview
-        if let attributes = (self.superview?.easy_attributes.filter { $0.createView === self }) {
+        if let attributes = (self.superview?.attributes.filter { $0.createItem === self }) {
             storedAttributes.appendContentsOf(attributes)
         }
         
         // Reload attributes owned by the current view
-        let attributes = self.easy_attributes.filter { $0.createView === self }
+        let attributes = self.attributes.filter { $0.createItem === self }
         storedAttributes.appendContentsOf(attributes)
 
         // Apply
@@ -103,28 +82,28 @@ public extension UIView {
      */
     public func easy_clear() {
         // Remove from the stored Attribute objects of the superview
-        // those which createView is the current UIView
-        if let superview = self.superview {
-            superview.easy_attributes = superview.easy_attributes.filter { $0.createView !== self }
+        // those which createItem is the current UIView
+        if let owningView = self.owningView {
+            owningView.attributes = owningView.attributes.filter { $0.createItem !== self }
         }
         
         // Remove from the stored Attribute objects of the current view
-        // those which createView is the current UIView
-        self.easy_attributes = self.easy_attributes.filter { $0.createView !== self }
+        // those which createItem is the current UIView
+        self.attributes = self.attributes.filter { $0.createItem !== self }
         
         // Now uninstall those constraints
         var constraintsToUninstall: [NSLayoutConstraint] = []
         
-        // Gather NSLayoutConstraints in the superview with self as createView
+        // Gather NSLayoutConstraints in the superview with self as createItem
         for constraint in (self.superview?.constraints ?? []) {
-            if let attribute = constraint.easy_attribute where attribute.createView === self {
+            if let attribute = constraint.easy_attribute where attribute.createItem === self {
                 constraintsToUninstall.append(constraint)
             }
         }
         
-        // Gather NSLayoutConstraints in self with self as createView
+        // Gather NSLayoutConstraints in self with self as createItem
         for constraint in self.constraints {
-            if let attribute = constraint.easy_attribute where attribute.createView === self {
+            if let attribute = constraint.easy_attribute where attribute.createItem === self {
                 constraintsToUninstall.append(constraint)
             }
         }

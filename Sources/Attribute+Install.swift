@@ -17,20 +17,12 @@ internal extension Attribute {
     
     /**
         Determines whether the `Attribute` must be installed or not
-        depending on the `Condition` closure and the existence of a
-        superview for the `view` parameter
-        - parameter view: `UIView` which superview will be checked
+        depending on the `Condition` closure
         - return boolean determining if the `Attribute` has to be
         applied
      */
-    internal func shouldInstallOnView(view: UIView) -> Bool {
-        guard let _ = view.superview else {
-            return false
-        }
-        guard self.condition?() ?? true else {
-            return false
-        }
-        return true
+    internal func shouldInstall() -> Bool {
+        return self.condition?() ?? true
     }
     
     /**
@@ -39,25 +31,37 @@ internal extension Attribute {
         with such `Attribute`
         - parameter view: `UIView` in which the `Attribute` will be installed
      */
-    internal func resolveConflictsOnView(view: UIView) {
+    internal func resolveConflictsOnItem(item: Item) {
         // Find conflicting constraints and attributes already installed
-        let ownerView = self.ownedBySuperview() ? view.superview! : view
-        var conflictingAttributes: [Attribute] = []
+        let ownerView = self.ownedBySuperview() ? item.owningView! : item
         let conflictingConstraints = ownerView.constraints.filter { constraint in
             if let attribute = constraint.easy_attribute where attribute =~ self {
-                conflictingAttributes.append(attribute)
                 return true
             }
             return false
         }
         
         // Remove conflicting attributes
-        ownerView.easy_attributes = ownerView.easy_attributes.filter {
-            conflictingAttributes.contains($0) == false || $0 == self
-        }
+        let conflictingAttributes = ownerView.attributes.filter { $0 != self && (($0 =~ self) == false) }
+        ownerView.attributes = conflictingAttributes
         
         // Deactivate conflicting installed constraints
         NSLayoutConstraint.deactivateConstraints(conflictingConstraints)
+    }
+    
+    /**
+        Appends the current attribute to the associated object `attributes`
+        of the owner `UIView`
+        - parameter item: `Item` in which the `Attribute` will be installed
+     */
+    internal func storeInItem(item: Item) {
+        // Store the attribute applied in the `ownerView`
+        if self.ownedBySuperview() {
+            item.owningView?.attributes.append(self)
+        }
+        else { // Store the attributes applied in `item`
+            item.attributes.append(self)
+        }
     }
     
     /**
@@ -74,7 +78,7 @@ internal extension Attribute {
         
         // If reference view is the superview then return same attribute
         // as `createAttribute`
-        if let referenceView = self.referenceView where referenceView === self.createView?.superview {
+        if let referenceItem = self.referenceItem where referenceItem === self.createItem?.owningView {
             return self.createAttribute
         }
         

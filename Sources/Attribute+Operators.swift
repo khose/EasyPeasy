@@ -18,7 +18,7 @@ extension Attribute: Equatable { }
 public func == (lhs: Attribute, rhs: Attribute) -> Bool {
     
     // Create views
-    if (lhs.createView === rhs.createView) == false {
+    if (lhs.createItem === rhs.createItem) == false {
         return false
     }
     
@@ -28,7 +28,7 @@ public func == (lhs: Attribute, rhs: Attribute) -> Bool {
     }
     
     // Reference views
-    if (lhs.referenceView === rhs.referenceView) == false {
+    if (lhs.referenceItem === rhs.referenceItem) == false {
         return false
     }
     
@@ -46,23 +46,13 @@ public func == (lhs: Attribute, rhs: Attribute) -> Bool {
         return false
     }
     
-    // Priorities conflict
+    // Priorities
     if lhs.priority.layoutPriority() != rhs.priority.layoutPriority() {
         return false
     }
     
-    // Conditions conflict
-    var lhsCondition = true
-    if let createView = lhs.createView {
-        lhsCondition = lhs.shouldInstallOnView(createView)
-    }
-    
-    var rhsCondition = true
-    if let createView = rhs.createView {
-        rhsCondition = rhs.shouldInstallOnView(createView)
-    }
-    
-    if lhsCondition != rhsCondition {
+    // Conditions
+    if lhs.shouldInstall() != rhs.shouldInstall() {
         return false
     }
     
@@ -78,7 +68,7 @@ infix operator =~ {}
 internal func =~ (installed: Attribute, toInstall: Attribute) -> Bool {
     
     // Create views conflict
-    if (installed.createView === toInstall.createView) == false {
+    if (installed.createItem === toInstall.createItem) == false {
         return false
     }
     
@@ -92,14 +82,8 @@ internal func =~ (installed: Attribute, toInstall: Attribute) -> Bool {
         return false
     }
     
-    // Conditions conflict (we assume condition is true for
-    // the installed view)
-    var toInstallCondition = true
-    if let createView = toInstall.createView {
-        toInstallCondition = toInstall.shouldInstallOnView(createView)
-    }
-    
-    if toInstallCondition == false {
+    // Conditions conflict
+    if installed.shouldInstall() != toInstall.shouldInstall() {
         return false
     }
     
